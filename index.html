@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<head>
+<style>
+    .carta-box {
+        width: 10%;
+        height: 30%;
+        perspective: 1000px;
+        border-radius: 10px;
+        border: brown 2px solid;
+    }
+
+    .carta-box:focus .carta {
+        transform: rotateY(180deg);
+    }
+
+    .carta {
+        transform-style: preserve-3d;
+        transition: all 1s linear;
+    }
+
+    .cara {
+        position: absolute;
+        backface-visibility: hidden;
+    }
+
+    .cara.detras {
+        transform: rotateY(180deg);
+    }
+
+    #lista1 li {
+        display: inline;
+        padding-left: 3px;
+        padding-right: 3px;
+        background-color: black;
+    }
+
+    .tablero {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        height: 70%;
+        width: 80%;
+    }
+
+    .interior-casilla{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        
+    }
+
+    .cuerpo{
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        
+    }
+
+    .indicadores{
+        display: flex;
+        flex-direction: row;
+        width: 20%;
+    }
+
+    .flex-columna{
+        display: flex;
+        flex-direction: column;
+        padding:2%;
+    }
+
+
+   
+</style>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+<body> 
+    <div id="aplicacion">
+        <v-app> 
+            <v-container>
+                <div>
+                    <h1>Bienvenido a mi juego de serpientes y escaleras en vue js + vuetify </h1>
+                </div>
+                <div class="cuerpo">
+                    <div class="indicadores">
+                        <div v-if="$store.state.statusJuego==0" class="flex-columna">
+                            <span style="font-size: larger; font-weight: bold;">Configuración del juego</span>
+                            <div>
+                                <v-combobox  v-model="numeroJugadores" :items="opcionJugadores" label="Total Jugadores" outlined></v-combobox>
+                            </div>
+                            <v-btn color="green" class="white--text" @click="iniciarJuego()">
+                                Iniciar
+                                <v-icon right dark>
+                                    mdi-play
+                                </v-icon>
+                            </v-btn>
+                        </div>
+                        <div v-else class="flex-columna">
+                            <span style="font-size: larger; font-weight: bold;">Juego Actual</span>
+                            <div v-for="jugador in $store.state.jugadores" v-bind:id="jugador.numeroJugador" class="flex-column">
+                                <div>{{jugador.nombreJugador}}</div>
+                                <div>Casilla Actual: {{jugador.posicionActual}}</div>
+                                <div style="height: 20px;width: 30px;background-color: #c7c7c7;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tablero">
+                        <div v-for="casilla in tablero" v-bind:id="casilla.numeroCasilla" class="carta-box" style="float:left ">
+                            <div class="interior-casilla">
+                                {{casilla.numeroCasilla}}
+                            </div>
+                            <div v-if="casilla.sube > 0" style="text-align: center;">
+                                Sube a: {{casilla.sube}}
+                                <v-icon large color="brown">
+                                    mdi-ladder
+                                </v-icon>
+                            </div>
+                            <div v-if="casilla.baja > 0" style="text-align: center;">
+                                Baja a: {{casilla.baja}}
+                                <v-icon large color="green darken-2">
+                                    mdi-snake
+                                </v-icon>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <v-dialog
+                    transition="dialog-bottom-transition"
+                    max-width="600"
+                    v-model="dialog"
+                >
+                    <template>
+                    <v-card>
+                        <v-toolbar
+                        color="primary"
+                        dark
+                        >El sitio dice lo siguiente...</v-toolbar>
+                        <v-card-text>
+                        <div class="text-h6 pa-12">El numero de jugadores debe ser mayor a 0... verifique </div>
+                        </v-card-text>
+                        <v-card-actions class="justify-end">
+                        <v-btn
+                            text
+                            @click="dialog = false"
+                        >Aceptar</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                    </template>
+                </v-dialog>
+            </v-container>
+        </v-app>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script src="https://unpkg.com/vuex@3.5.1/dist/vuex.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"></script>
+    <script src="./scripts.js"></script>
+</body>
+</html>
