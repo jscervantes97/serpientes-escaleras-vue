@@ -102,8 +102,19 @@
                             <div v-for="jugador in $store.state.jugadores" v-bind:id="jugador.numeroJugador" class="flex-column">
                                 <div>{{jugador.nombreJugador}}</div>
                                 <div>Casilla Actual: {{jugador.posicionActual}}</div>
-                                <div style="height: 20px;width: 30px;background-color: #c7c7c7;">
+                                <div style="display: flex; flex-direction: row; align-items: center;">
+                                    <div style="height: 20px;width: 30px;background-color: #c7c7c7;">
+                                    </div>
+                                    <div style="margin-left: 10px;" v-if="jugador.turno == 1">
+                                        <v-btn color="green" class="white--text" @click="tirar(jugador);">
+                                            Tirar
+                                            <v-icon right dark>
+                                                mdi-dice-multiple
+                                            </v-icon>
+                                        </v-btn>
+                                    </div>
                                 </div>
+                                
                             </div>
                         </div>
                     </div>

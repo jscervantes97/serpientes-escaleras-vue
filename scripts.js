@@ -9,18 +9,30 @@ const store = new Vuex.Store({
             'numeroJugador' : jugador.numero , 
             'nombreJugador' : jugador.nombre,
             'colorJugador' : jugador.color,
-            'posicionActual' : 0
+            'posicionActual' : 0,
+            'turno' : 0 
           });
          // console.log('Se agrego un nuevo jugador');
          // console.log(state.jugadores);
       },
       iniciarJuego(state){
         state.statusJuego  = 1 
+        state.jugadores[0].turno = 1 
       },
       moverJugador(state,jugador){
-        jugadorEntrada = state.jugadores[jugador.numero-1] ; 
-        console.log("llegue aqui =?");
+        console.log(jugador); 
+        jugadorEntrada = state.jugadores[jugador.numero] ; 
         console.log(jugadorEntrada) ; 
+        jugadorEntrada.posicionActual = jugadorEntrada.posicionActual + jugador.totalCasillasAvanza ; 
+        jugadorEntrada.turno = 0 ; 
+        state.jugadores[jugador.numero] = jugadorEntrada ;
+        if(jugador.numero < state.jugadores.length - 1 ){
+          state.jugadores[jugador.numero+1].turno = 1 ;
+        }else{
+          state.jugadores[0].turno = 1 ;
+        }
+        //console.log("llegue aqui =?");
+       
       }
     }
 });
@@ -35,7 +47,11 @@ const store = new Vuex.Store({
       limiteTablero : 100 ,
       opcionJugadores : [1,2,3,4],
       numeroJugadores:  0 ,
-      dialog : false 
+      dialog : false ,
+      arrayEscaleras :  [],
+      arraySerpientes :  [] ,
+      arrayEscalerasDepurado :  [],
+      arraySerpientesDepurado :  [] ,
     },
     el: '#aplicacion',
     vuetify: new Vuetify(),
@@ -49,30 +65,29 @@ const store = new Vuex.Store({
         document.getElementById("tvesModal").style.display = "none";
       },
       generarTablero : function(totalEscaleras,totalSerpientes,numeroCasillas){
-        var contadorEscaleras = 0 ; 
-        var contadorSerpientes  = 0 ; 
+        var indiceEscaleras = 0 ; 
+        var indiceSerpientes  = 1 ; 
+        this.generarSerpientesyEscaleras();
+        console.log('GENERO EL TABLERO ?');
+        console.log(this.arrayEscaleras);
+        console.log(this.arrayEscalerasDepurado);
+        console.log(this.arraySerpientes);
+        console.log(this.arraySerpientesDepurado);
         for(var iterador = 0 ; iterador < numeroCasillas ; iterador++){
-            var tipoGenerar = this.getNumeroRandom();
-            if(iterador > 16){
-              if(tipoGenerar == this.TIPO_ESCALERA && contadorEscaleras < totalEscaleras){
-                let casilla = this.generaCasilla(iterador,tipoGenerar);
-                this.tablero.push(casilla);
-                contadorEscaleras++; 
-              }else if(tipoGenerar == this.TIPO_SERPIENTE && contadorSerpientes < totalSerpientes && iterador > 15){
-                  let casilla = this.generaCasilla(iterador,tipoGenerar);
-                  this.tablero.push(casilla);
-                  contadorSerpientes++; 
-              }else{
-                  let casilla = this.generaCasilla(iterador,this.TIPO_NORMAL);
-                  this.tablero.push(casilla);
-              }
-            }else{
-              let casilla = this.generaCasilla(iterador,this.TIPO_NORMAL);
+            if(this.arrayEscalerasDepurado.includes(iterador)){
+              let casilla = this.generaCasilla(iterador,this.TIPO_ESCALERA,indiceEscaleras);
               this.tablero.push(casilla);
+              indiceEscaleras = indiceEscaleras + 2 ; 
+            }else if (this.arraySerpientesDepurado.includes(iterador)){
+              let casilla = this.generaCasilla(iterador,this.TIPO_SERPIENTE,indiceSerpientes);
+              this.tablero.push(casilla);
+              indiceSerpientes = indiceSerpientes + 2 ; 
             }
-            
+            else{
+              let casilla = this.generaCasilla(iterador,this.TIPO_NORMAL,0);
+              this.tablero.push(casilla);
+            } 
         }
-        console.log(contadorEscaleras + ' ' + contadorSerpientes)
         console.log(this.tablero); 
       },
 
@@ -87,18 +102,44 @@ const store = new Vuex.Store({
         } 
       },
 
-      getNumeroRandomEntre : function(inicio,limite){
-        return Math.floor(Math.random() * limite) + inicio;
+      generarSerpientesyEscaleras : function(){
+          for(var iterador = 0 ; iterador < 10 ; iterador++){
+            this.arrayEscaleras.push(this.getNumeroRandomEntre(1,100));
+            this.arraySerpientes.push(this.getNumeroRandomEntre(1,100));
+          }
+          this.arrayEscaleras.sort(function(a, b) {
+            return a - b;
+          });
+          this.arraySerpientes.sort(function(a, b) {
+            return a - b;
+          });
+          for(var iterador = 1 ; iterador < 10 ; iterador = iterador + 2){
+            this.arrayEscalerasDepurado.push(this.arrayEscaleras[iterador-1]);
+            this.arraySerpientesDepurado.push(this.arraySerpientes[iterador]);
+          }
       },
 
-      generaCasilla : function(numeroCasilla,tipoCasilla){ 
+      getNumeroRandomEntre : function(inicio,limite){
+        var numeroGenerado = Math.floor(Math.random() * limite) + inicio;
+        while(this.arrayEscaleras.includes(numeroGenerado) || this.arraySerpientes.includes(numeroGenerado)){
+          numeroGenerado = Math.floor(Math.random() * limite) + inicio;
+        }
+        return numeroGenerado ; 
+      },
+
+      getNumeroDados : function(inicio,limite){
+        var numeroGenerado = Math.floor(Math.random() * limite) + inicio;
+        return numeroGenerado ; 
+      },
+
+
+      generaCasilla : function(numeroCasilla,tipoCasilla,indice){ 
         var sube = 0 ; 
         var baja = 0 ; 
         if(tipoCasilla == this.TIPO_ESCALERA){
-            if(numeroCasilla < 50){}
-            sube = this.getNumeroRandomEntre(numeroCasilla,this.limiteTablero);
+            sube = this.arrayEscaleras[indice+1];
         }else if(tipoCasilla == this.TIPO_SERPIENTE){
-            baja = this.getNumeroRandomEntre(0,numeroCasilla);
+            baja = this.arraySerpientes[indice-1];
         }
         return {
             'numeroCasilla' : numeroCasilla + 1,
@@ -111,15 +152,14 @@ const store = new Vuex.Store({
         if(this.numeroJugadores > 0) {
           for(var iterador = 0 ; iterador < this.numeroJugadores ; iterador++){
             store.commit('agregarJugador',{
-              'numero' : (iterador + 1),
+              'numero' : iterador,
               'color' : 'green',
-              'nombre' : 'Jugador ' + (iterador+1)
+              'nombre' : 'Jugador ' + (iterador+1),
+              'posicionActual' : 0 ,
+              'turno' : 0 
             });
           }
           store.commit('iniciarJuego');
-          store.commit('moverJugador',{
-            'numero' : 1 
-          });
         }else{
           this.dialog = true ;
         }
@@ -128,8 +168,17 @@ const store = new Vuex.Store({
 
       moverJugador : function(indiceJugador,cantidadMover){
         store.commit('moverJugador',{
-          'numero' : 1 
+          'numero' : indiceJugador
         });
       },
+
+      tirar : function(jugador){
+        console.log(jugador)
+        var numeroAvanzar = this.getNumeroDados(1,7) ;
+        store.commit('moverJugador',{
+          'numero' : jugador.numeroJugador,
+          'totalCasillasAvanza' : numeroAvanzar
+        });
+      }
     }
   });
