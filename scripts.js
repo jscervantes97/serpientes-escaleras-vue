@@ -1,7 +1,8 @@
 const store = new Vuex.Store({
     state: {
       statusJuego : 0,
-      jugadores : [] 
+      jugadores : [],
+      consolaJuego :  []  
     },
     mutations: {
       agregarJugador(state,jugador){
@@ -12,17 +13,13 @@ const store = new Vuex.Store({
             'posicionActual' : 0,
             'turno' : 0 
           });
-         // console.log('Se agrego un nuevo jugador');
-         // console.log(state.jugadores);
       },
       iniciarJuego(state){
         state.statusJuego  = 1 
         state.jugadores[0].turno = 1 
       },
       moverJugador(state,jugador){
-        console.log(jugador); 
-        jugadorEntrada = state.jugadores[jugador.numero] ; 
-        console.log(jugadorEntrada) ; 
+        jugadorEntrada = state.jugadores[jugador.numero] ;  
         jugadorEntrada.posicionActual = jugadorEntrada.posicionActual + jugador.totalCasillasAvanza ; 
         jugadorEntrada.turno = 0 ; 
         state.jugadores[jugador.numero] = jugadorEntrada ;
@@ -31,8 +28,27 @@ const store = new Vuex.Store({
         }else{
           state.jugadores[0].turno = 1 ;
         }
-        //console.log("llegue aqui =?");
-       
+      },
+      subirBajarJugador(state, jugador){
+        jugadorEntrada = state.jugadores[jugador.numero] ;  
+        jugadorEntrada.posicionActual = jugador.nuevaPosicion ; 
+      }
+    },
+    getters: {
+      getJugador: (state) => (id) => {
+        return state.jugadores.find(jugador => jugador.numeroJugador == id);
+      },
+      getAllJugadores : (state) => () =>{
+        return state.jugadores ; 
+      },
+      getPosicionesJugadores : (state) => () =>{
+        let arrayPosiciones = [] ;
+        state.jugadores.forEach(function(jugador){
+          if(jugador.posicionActual > 0 ){
+            arrayPosiciones.push(jugador.posicionActual);
+          }
+        });
+        return arrayPosiciones ; 
       }
     }
 });
@@ -57,7 +73,6 @@ const store = new Vuex.Store({
     vuetify: new Vuetify(),
     store : store,
     beforeMount(){
-        console.log('compilo esta vaina?')
         this.generarTablero(5,5,100);
 	},
     methods:{
@@ -68,11 +83,6 @@ const store = new Vuex.Store({
         var indiceEscaleras = 0 ; 
         var indiceSerpientes  = 1 ; 
         this.generarSerpientesyEscaleras();
-        console.log('GENERO EL TABLERO ?');
-        console.log(this.arrayEscaleras);
-        console.log(this.arrayEscalerasDepurado);
-        console.log(this.arraySerpientes);
-        console.log(this.arraySerpientesDepurado);
         for(var iterador = 0 ; iterador < numeroCasillas ; iterador++){
             if(this.arrayEscalerasDepurado.includes(iterador)){
               let casilla = this.generaCasilla(iterador,this.TIPO_ESCALERA,indiceEscaleras);
@@ -144,7 +154,8 @@ const store = new Vuex.Store({
         return {
             'numeroCasilla' : numeroCasilla + 1,
             'sube' : sube,
-            'baja' : baja
+            'baja' : baja,
+            'jugadoresDentro' : []
         };
       },
 
@@ -166,19 +177,43 @@ const store = new Vuex.Store({
         
       },
 
-      moverJugador : function(indiceJugador,cantidadMover){
-        store.commit('moverJugador',{
-          'numero' : indiceJugador
-        });
-      },
+
 
       tirar : function(jugador){
-        console.log(jugador)
         var numeroAvanzar = this.getNumeroDados(1,7) ;
         store.commit('moverJugador',{
           'numero' : jugador.numeroJugador,
           'totalCasillasAvanza' : numeroAvanzar
         });
+        jugador = store.getters.getJugador(jugador.numeroJugador);
+        console.log(jugador)
+        let casilla = this.getCasillaPorNumero(jugador.posicionActual);
+        console.log(casilla)
+        if(casilla.sube != 0 || casilla.baja != 0){
+          store.commit('subirBajarJugador',{
+            'numero' : jugador.numeroJugador,
+            'nuevaPosicion' : (casilla.sube + casilla.baja)
+          });
+        }
+        jugador = store.getters.getJugador(jugador.numeroJugador);
+        console.log(jugador)
+        this.tablero[jugador.posicionActual-1].jugadoresDentro.push(jugador);
+        this.limpiarTablero();
+        
+      },
+
+      getCasillaPorNumero : function(numeroCasilla){
+        return this.tablero.find(casilla => casilla.numeroCasilla == numeroCasilla);
+      },
+
+      limpiarTablero : function(){
+        let posicionesActuales = store.getters.getPosicionesJugadores();
+        console.log(posicionesActuales);
+        for(var iterador = 0 ; iterador < this.tablero.length ; iterador++){
+          if(!posicionesActuales.includes(this.tablero[iterador].numeroCasilla)){
+            this.tablero[iterador].jugadoresDentro =  [] ;
+          }
+        }   
       }
     }
   });

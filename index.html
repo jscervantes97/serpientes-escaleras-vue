@@ -135,7 +135,11 @@
                                     mdi-snake
                                 </v-icon>
                             </div>
-
+                            <div v-if="casilla.jugadoresDentro.length > 0"  class="interior-casilla">
+                                <div v-for="jugadorDentro in casilla.jugadoresDentro" v-bind:id="jugadorDentro.numeroJugador">
+                                    {{jugadorDentro.nombreJugador}}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
