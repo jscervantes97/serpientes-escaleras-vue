@@ -68,6 +68,7 @@ const store = new Vuex.Store({
       arraySerpientes :  [] ,
       arrayEscalerasDepurado :  [],
       arraySerpientesDepurado :  [] ,
+      colores : ['#088A85','#DF0101','#0404B4','#F7FE2E']
     },
     el: '#aplicacion',
     vuetify: new Vuetify(),
@@ -81,7 +82,8 @@ const store = new Vuex.Store({
       },
       generarTablero : function(totalEscaleras,totalSerpientes,numeroCasillas){
         var indiceEscaleras = 0 ; 
-        var indiceSerpientes  = 1 ; 
+        var indiceSerpientes  = 1 ;
+        this.colores.sort(function() { return Math.random() - 0.5 }); 
         this.generarSerpientesyEscaleras();
         for(var iterador = 0 ; iterador < numeroCasillas ; iterador++){
             if(this.arrayEscalerasDepurado.includes(iterador)){
@@ -162,15 +164,22 @@ const store = new Vuex.Store({
       iniciarJuego : function(){
         if(this.numeroJugadores > 0) {
           for(var iterador = 0 ; iterador < this.numeroJugadores ; iterador++){
+            var color = this.colores[iterador];
+            console.log(color)
             store.commit('agregarJugador',{
               'numero' : iterador,
-              'color' : 'green',
+              'color' : {
+                height: '20px', 
+                width: '30px' ,
+                backgroundColor: color 
+              },
               'nombre' : 'Jugador ' + (iterador+1),
               'posicionActual' : 0 ,
               'turno' : 0 
             });
           }
           store.commit('iniciarJuego');
+          console.log(store.state.jugadores);
         }else{
           this.dialog = true ;
         }

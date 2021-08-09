@@ -40,6 +40,7 @@
         flex-wrap: wrap;
         height: 70%;
         width: 80%;
+        margin-left: 25%;
     }
 
     .interior-casilla{
@@ -84,7 +85,7 @@
                     <h1>Bienvenido a mi juego de serpientes y escaleras en vue js + vuetify </h1>
                 </div>
                 <div class="cuerpo">
-                    <div class="indicadores">
+                    <div class="indicadores" style="position:fixed;">
                         <div v-if="$store.state.statusJuego==0" class="flex-columna">
                             <span style="font-size: larger; font-weight: bold;">Configuración del juego</span>
                             <div>
@@ -97,15 +98,17 @@
                                 </v-icon>
                             </v-btn>
                         </div>
-                        <div v-else class="flex-columna">
+                        <div v-else class="flex-columna" style="width: 100%;">
                             <span style="font-size: larger; font-weight: bold;">Juego Actual</span>
                             <div v-for="jugador in $store.state.jugadores" v-bind:id="jugador.numeroJugador" class="flex-column">
-                                <div>{{jugador.nombreJugador}}</div>
-                                <div>Casilla Actual: {{jugador.posicionActual}}</div>
-                                <div style="display: flex; flex-direction: row; align-items: center;">
-                                    <div style="height: 20px;width: 30px;background-color: #c7c7c7;">
+                                <div style="padding:5px;">
+                                    <div style="display: flex; flex-direction: row; align-items: center;">
+                                        <div :style="jugador.colorJugador">
+                                        </div>  
+                                        <div style="margin-left: 10%;">{{jugador.nombreJugador}}</div>
                                     </div>
-                                    <div style="margin-left: 10px;" v-if="jugador.turno == 1">
+                                    <div>Casilla Actual: {{jugador.posicionActual}}</div>
+                                    <div style="text-align: center;" v-if="jugador.turno == 1">
                                         <v-btn color="green" class="white--text" @click="tirar(jugador);">
                                             Tirar
                                             <v-icon right dark>
@@ -114,7 +117,9 @@
                                         </v-btn>
                                     </div>
                                 </div>
-                                
+                            </div>
+                            <div style="border-style: solid;">
+                            Resumen de movimientos
                             </div>
                         </div>
                     </div>
@@ -137,7 +142,8 @@
                             </div>
                             <div v-if="casilla.jugadoresDentro.length > 0"  class="interior-casilla">
                                 <div v-for="jugadorDentro in casilla.jugadoresDentro" v-bind:id="jugadorDentro.numeroJugador">
-                                    {{jugadorDentro.nombreJugador}}
+                                    <div :style="jugadorDentro.colorJugador">
+                                    </div>  
                                 </div>
                             </div>
                         </div>
